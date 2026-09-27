@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kavach Circle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --bg: #17151122;
+    --bg: #171511;
+    --bg-panel: #1F1C18;
+    --bg-panel-raised: #262219;
+    --text: #F2ECDF;
+    --text-dim: #B9AF9E;
+    --brass: #C9924A;
+    --brass-soft: #8A6229;
+    --alarm: #D2593F;
+    --teal: #5C9187;
+    --line: rgba(242,236,223,0.14);
+    --line-strong: rgba(242,236,223,0.26);
+    --shadow: none;
+    --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F1ECE0;
+      --bg-panel: #FBF8F1;
+      --bg-panel-raised: #FFFFFF;
+      --text: #201C16;
+      --text-dim: #6B6252;
+      --brass: #9C6B24;
+      --brass-soft: #C9A06A;
+      --alarm: #A6381F;
+      --teal: #2E635A;
+      --line: rgba(32,28,22,0.14);
+      --line-strong: rgba(32,28,22,0.26);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F1ECE0;
+    --bg-panel: #FBF8F1;
+    --bg-panel-raised: #FFFFFF;
+    --text: #201C16;
+    --text-dim: #6B6252;
+    --brass: #9C6B24;
+    --brass-soft: #C9A06A;
+    --alarm: #A6381F;
+    --teal: #2E635A;
+    --line: rgba(32,28,22,0.14);
+    --line-strong: rgba(32,28,22,0.26);
+  }
+  :root[data-theme="dark"] {
+    --bg: #171511;
+    --bg-panel: #1F1C18;
+    --bg-panel-raised: #262219;
+    --text: #F2ECDF;
+    --text-dim: #B9AF9E;
+    --brass: #C9924A;
+    --brass-soft: #8A6229;
+    --alarm: #D2593F;
+    --teal: #5C9187;
+    --line: rgba(242,236,223,0.14);
+    --line-strong: rgba(242,236,223,0.26);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  img, svg { max-width: 100%; display: block; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 20px; }
+  a { color: inherit; }
+  button { font-family: inherit; }
+
+  /* ---------- Header ---------- */
+  header.top {
+    position: sticky; top: 0; z-index: 40;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
+    padding-bottom: 14px;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .brandmark { display: flex; align-items: center; gap: 10px; cursor: pointer; background: none; border: none; color: inherit; padding: 0; }
+  .shield { width: 30px; height: 30px; flex: none; position: relative; }
+  .shield svg { width: 100%; height: 100%; }
+  .shield .ring {
+    position: absolute; inset: -6px; border-radius: 50%;
+    border: 1px solid var(--brass);
+    opacity: 0;
+  }
+  .wordmark { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: 0.01em; }
+  .top-actions { display: flex; align-items: center; gap: 6px; }
+  .icon-btn {
+    width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--bg-panel); color: var(--text); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: border-color .15s ease;
+  }
+  .icon-btn:hover { border-color: var(--line-strong); }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  /* ---------- Drawer ---------- */
+  .drawer-scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 60;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  .drawer-scrim.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; height: 100%; width: min(320px, 84vw); z-index: 61;
+    background: var(--bg-panel-raised); border-left: 1px solid var(--line);
+    transform: translateX(100%); transition: transform .25s ease;
+    padding: calc(env(safe-area-inset-top,0px) + 18px) 20px 20px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer h3 { font-family: var(--font-display); font-size: 1rem; margin: 0 0 10px; color: var(--text-dim); font-weight: 500; }
+  .drawer-item {
+    display: block; width: 100%; text-align: left; background: none; border: none; color: var(--text);
+    font-size: 1rem; padding: 12px 4px; border-bottom: 1px solid var(--line); cursor: pointer;
+  }
+  .drawer-item:last-of-type { border-bottom: none; }
+  .drawer-close { align-self: flex-end; margin-bottom: 10px; }
+
+  /* ---------- Views ---------- */
+  main { padding-bottom: 80px; }
+  .view { display: none; animation: viewIn .3s ease; }
+  .view.active { display: block; }
+  @keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  section.block { padding: 34px 0; }
+  section.block + section.block { border-top: 1px solid var(--line); }
+
+  .eyebrow-note {
+    font-size: 0.82rem; color: var(--text-dim); border-left: 2px solid var(--brass);
+    padding-left: 10px; margin: 0 0 18px;
+  }
+
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0 0 12px; line-height: 1.15; }
+  h1 { font-size: clamp(2.1rem, 9vw, 2.8rem); font-weight: 700; }
+  h2 { font-size: clamp(1.5rem, 6vw, 1.9rem); }
+  h3 { font-size: 1.15rem; }
+  p { margin: 0 0 14px; max-width: 62ch; }
+  .lede { font-size: 1.05rem; color: var(--text-dim); max-width: 56ch; }
+
+  /* Hero */
+  .hero { padding-top: 40px; }
+  .hero-tag {
+    display: inline-block; font-size: 0.82rem; color: var(--brass);
+    border: 1px solid var(--brass-soft); border-radius: 100px; padding: 4px 12px; margin-bottom: 20px;
+  }
+  .reveal span {
+    display: inline-block; opacity: 0; transform: translateY(0.35em);
+    animation: wordUp .6s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  @keyframes wordUp { to { opacity: 1; transform: none; } }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 20px; border-radius: 8px; border: 1px solid transparent; font-size: 0.98rem;
+    font-weight: 600; cursor: pointer; transition: transform .12s ease, filter .15s ease, background .15s ease;
+    text-align: center;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--brass); color: #1B1408; }
+  .btn-primary:hover { filter: brightness(1.08); }
+  .btn-outline { background: transparent; color: var(--text); border-color: var(--line-strong); }
+  .btn-outline:hover { border-color: var(--brass); }
+  .btn-quiet { background: var(--bg-panel); color: var(--text); border-color: var(--line); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-block { width: 100%; }
+
+  /* Home grid */
+  .action-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 28px; }
+  @media (min-width: 480px) { .action-grid { grid-template-columns: 1fr 1fr; } }
+  .action-card {
+    text-align: left; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px; cursor: pointer; display: flex; flex-direction: column; gap: 8px; color: var(--text);
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .action-card:hover { border-color: var(--brass-soft); background: var(--bg-panel-raised); }
+  .action-card .label { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+  .action-card .desc { color: var(--text-dim); font-size: 0.9rem; margin: 0; }
+  .action-card .go { color: var(--brass); font-size: 0.85rem; margin-top: auto; }
+
+  /* Footer */
+  footer.site {
+    padding: 40px 0 calc(40px + env(safe-area-inset-bottom,0px)); border-top: 1px solid var(--line);
+    text-align: left;
+  }
+  footer.site .fmark { font-family: var(--font-display); font-weight: 600; }
+  footer.site .ftag { color: var(--text-dim); font-size: 0.95rem; margin-top: 4px; }
+  footer.site .fraw {
+    display: inline-block; margin-top: 18px; font-size: 0.75rem; letter-spacing: 0.04em;
+    color: var(--text-dim); border: 1px solid var(--line); padding: 4px 10px; border-radius: 100px;
+  }
+
+  /* Forms */
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 0.88rem; color: var(--text-dim); margin-bottom: 6px; }
+  .field input[type=text], .field input[type=number], .field input[type=email],
+  .field input[type=date], .field textarea, .field select {
+    width: 100%; background: var(--bg-panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: 12px 12px; font-size: 1rem; font-family: inherit;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: 2px solid var(--brass); outline-offset: 1px; border-color: var(--brass);
+  }
+  .field textarea { min-height: 90px; resize: vertical; }
+  .field-hint { font-size: 0.8rem; color: var(--text-dim); margin-top: 6px; }
+  .two-col { display: grid; grid-template-columns: 1fr; gap: 0; }
+  @media (min-width: 480px) { .two-col { grid-template-columns: 1fr 1fr; gap: 0 16px; } }
+
+  .check-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  @media (min-width: 480px) { .check-grid { grid-template-columns: 1fr 1fr; } }
+  .check-item {
+    display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px 12px; cursor: pointer; font-size: 0.92rem;
+  }
+  .check-item:hover { border-color: var(--line-strong); }
+  .check-item input { accent-color: var(--brass); width: 16px; height: 16px; flex: none; }
+
+  .form-section-title { font-size: 0.78rem; text-transform: none; color: var(--brass); margin: 30px 0 4px; font-weight: 600; }
+  .form-section-title:first-child { margin-top: 0; }
+
+  /* Banner / toast */
+  .banner {
+    position: fixed; left: 0; right: 0; top: calc(env(safe-area-inset-top,0px) + 66px); z-index: 70;
+    display: flex; justify-content: center; pointer-events: none;
+  }
+  .banner-msg {
+    background: var(--brass); color: #1B1408; font-weight: 600; font-size: 0.92rem;
+    padding: 12px 18px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    transform: translateY(-12px); opacity: 0; transition: transform .25s ease, opacity .25s ease;
+    max-width: 86vw; text-align: center;
+  }
+  .banner-msg.show { transform: translateY(0); opacity: 1; }
+
+  /* Feedback board */
+  .board-add { display: flex; gap: 8px; margin-bottom: 22px; }
+  .board-add input { flex: 1; }
+  .card-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 480px) { .card-grid { grid-template-columns: 1fr 1fr; } }
+  .idea-card {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: var(--bg-panel);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .idea-card p { margin: 0; font-size: 0.98rem; }
+  .idea-card .row { display: flex; align-items: center; justify-content: space-between; }
+  .idea-card .tag { font-size: 0.72rem; color: var(--text-dim); }
+  .vote-btn {
+    display: flex; align-items: center; gap: 6px; background: var(--bg-panel-raised); border: 1px solid var(--line);
+    border-radius: 100px; padding: 5px 11px; cursor: pointer; color: var(--text); font-size: 0.85rem; font-weight: 600;
+  }
+  .vote-btn:hover { border-color: var(--brass); }
+  .vote-btn:active { transform: scale(0.94); }
+
+  /* Projects */
+  .project-card {
+    border: 1px solid var(--line); border-radius: 10px; padding: 18px; background: var(--bg-panel); margin-bottom: 12px;
+  }
+  .project-card h3 { margin-bottom: 4px; }
+  .project-card .tagline { color: var(--brass); font-size: 0.85rem; margin-bottom: 10px; }
+  .project-card ul { margin: 10px 0; padding-left: 18px; }
+  .project-card li { margin-bottom: 4px; font-size: 0.92rem; color: var(--text-dim); }
+  .project-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 10px; flex-wrap: wrap; }
+  .contrib-count { font-size: 0.82rem; color: var(--text-dim); }
+
+  /* Contributor roles */
+  .role-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 480px) { .role-grid { grid-template-columns: 1fr 1fr; } }
+  .role-card {
+    border: 1px solid var(--line); border-radius: 10px; padding: 14px; cursor: pointer; background: var(--bg-panel);
+    position: relative;
+  }
+  .role-card input { position: absolute; opacity: 0; }
+  .role-card .rk { font-size: 0.72rem; color: var(--brass); margin-bottom: 4px; display: block; }
+  .role-card .rn { font-weight: 600; margin-bottom: 4px; }
+  .role-card .rd { font-size: 0.85rem; color: var(--text-dim); margin: 0; }
+  .role-card.selected { border-color: var(--brass); background: var(--bg-panel-raised); }
+  .role-card.selected::after {
+    content: "✓"; position: absolute; top: 10px; right: 12px; color: var(--brass); font-weight: 700;
+  }
+
+  .disclaimer-box {
+    border: 1px solid var(--brass-soft); background: color-mix(in srgb, var(--brass) 10%, var(--bg-panel));
+    border-radius: 8px; padding: 14px 16px; font-size: 0.9rem; margin: 18px 0;
+  }
+
+  /* Consent */
+  .consent-note {
+    border: 1px solid var(--line-strong); border-radius: 8px; padding: 12px 14px; font-size: 0.85rem;
+    color: var(--text-dim); margin-bottom: 26px;
+  }
+  .consent-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .consent-item {
+    display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; cursor: pointer; font-size: 0.92rem;
+  }
+  .consent-item input { margin-top: 3px; accent-color: var(--brass); width: 17px; height: 17px; flex: none; }
+  .consent-item.checked { border-color: var(--brass-soft); }
+
+  .sig-wrap { border: 1px solid var(--line-strong); border-radius: 10px; padding: 12px; background: var(--bg-panel); }
+  .sig-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .sig-label-row span { font-size: 0.85rem; color: var(--text-dim); }
+  .sig-status { font-size: 0.8rem; color: var(--teal); font-weight: 600; }
+  canvas#sigpad {
+    width: 100%; height: 170px; display: block; border-radius: 6px;
+    background: var(--bg-panel-raised); touch-action: none; border: 1px dashed var(--line-strong);
+  }
+  canvas#sigpad.locked { opacity: 0.7; }
+  .sig-warning { color: var(--alarm); font-size: 0.85rem; margin-top: 8px; min-height: 1.2em; }
+  .sig-btn-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .sig-btn-row .btn { flex: 1; min-width: 100px; }
+
+  /* Confirmation overlay */
+  .overlay {
+    position: fixed; inset: 0; background: var(--bg); z-index: 80; display: none;
+    align-items: center; justify-content: center; padding: 24px;
+  }
+  .overlay.show { display: flex; }
+  .overlay-inner { max-width: 420px; text-align: left; }
+  .overlay-mark { width: 46px; height: 46px; margin-bottom: 20px; }
+  .overlay-inner h2 { font-size: 1.4rem; }
+
+  .code-highlight { color: var(--alarm); font-weight: 600; }
+
+  .empty-note { color: var(--text-dim); font-size: 0.9rem; font-style: italic; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-row">
+    <button class="brandmark" onclick="showView('home')" aria-label="Go home">
+      <span class="shield" id="shieldMark">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 2.5 L27 6.5 V15.5 C27 22.5 22.3 27.3 16 29.5 C9.7 27.3 5 22.5 5 15.5 V6.5 Z" stroke="var(--brass)" stroke-width="1.6" fill="none"/>
+          <path d="M11 15.8 L14.3 19.1 L21.2 11.9" stroke="var(--brass)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="ring" id="shieldRing"></span>
+      </span>
+      <span class="wordmark">Kavach Circle</span>
+    </button>
+    <div class="top-actions">
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle theme" title="Toggle light / dark">
+        <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2 12h2.2M19.8 12H22M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6" stroke-linecap="round"/></svg>
+      </button>
+      <button class="icon-btn" onclick="openDrawer()" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="drawer-scrim" id="drawerScrim" onclick="closeDrawer()"></div>
+<nav class="drawer" id="drawer" aria-label="Site navigation">
+  <button class="icon-btn drawer-close" onclick="closeDrawer()" aria-label="Close menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+  </button>
+  <h3>Kavach Circle</h3>
+  <button class="drawer-item" onclick="navTo('home')">Home</button>
+  <button class="drawer-item" onclick="navTo('about')">See the project</button>
+  <button class="drawer-item" onclick="navTo('join')">Join</button>
+  <button class="drawer-item" onclick="navTo('projects')">Join a project</button>
+  <button class="drawer-item" onclick="navTo('feedback')">Give feedback</button>
+  <button class="drawer-item" onclick="navTo('idea')">Share your idea</button>
+  <button class="drawer-item" onclick="navTo('contribute')">Become a contributor</button>
+</nav>
+
+<div class="banner" id="banner"><div class="banner-msg" id="bannerMsg"></div></div>
+
+<main class="wrap">
+
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <section class="block hero">
+      <span class="hero-tag">Raw community prototype</span>
+      <h1 class="reveal" id="heroHeadline"></h1>
+      <p class="lede">Kavach is not finished. It's an idea for a women's safety device, and right now it belongs to whoever wants to help shape it. Read it, argue with it, add to it.</p>
+      <p style="color:var(--text-dim); font-size:0.95rem;">Nothing on this site is a final decision — every screen is a question, not an announcement.</p>
+
+      <div class="action-grid">
+        <button class="action-card" onclick="showView('join')">
+          <span class="label">Join</span>
+          <p class="desc">Add your profile and answer a few questions.</p>
+          <span class="go">Start →</span>
+        </button>
+        <button class="action-card" onclick="showView('idea')">
+          <span class="label">Share your idea</span>
+          <p class="desc">Got one idea? Drop it in thirty seconds.</p>
+          <span class="go">Start →</span>
+        </button>
+        <button class="action-card" onclick="showView('feedback')">
+          <span class="label">Give feedback</span>
+          <p class="desc">React to ideas already on the board.</p>
+          <span class="go">Start →</span>
+        </button>
+        <button class="action-card" onclick="showView('about')">
+          <span class="label">See the project</span>
+          <p class="desc">Read where Kavach stands today.</p>
+          <span class="go">Start →</span>
+        </button>
+        <button class="action-card" onclick="showView('projects')">
+          <span class="label">Join a project</span>
+          <p class="desc">Pick a working group and get involved.</p>
+          <span class="go">Start →</span>
+        </button>
+        <button class="action-card" onclick="showView('contribute')">
+          <span class="label">Become a contributor</span>
+          <p class="desc">Choose a role and sign on formally.</p>
+          <span class="go">Start →</span>
+        </button>
+      </div>
+    </section>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="view" id="view-about">
+    <section class="block">
+      <h2>Where Kavach stands today</h2>
+      <p class="eyebrow-note">This page states the current thinking, not a decision. Nothing here has been filtered, ranked, or finalized.</p>
+      <p>Kavach started as one idea: a wearable safety device for women that doesn't look like a safety device. Beyond that, almost everything is still open.</p>
+      <p>What's being explored so far, in no particular order:</p>
+      <ul>
+        <li>A device disguised as ordinary jewelry — a ring, bracelet, necklace, or something else entirely.</li>
+        <li>A private code word that triggers <em>something</em>. What exactly it should do is still being worked out by the people answering the Join questions.</li>
+        <li>An app, legal groundwork, cybersecurity review, manufacturing, and testing — each running as its own project below.</li>
+        <li>Input from law, engineering, software, psychology, NGO work, and a dozen other fields, all treated as equally valid starting points.</li>
+      </ul>
+      <p style="margin-top:26px; font-weight:600;">What do you think? What would you change? What would you add?</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <button class="btn btn-primary" onclick="showView('feedback')">Give feedback</button>
+        <button class="btn btn-outline" onclick="showView('projects')">See the projects</button>
+        <button class="btn btn-outline" onclick="showView('idea')">Drop an idea</button>
+      </div>
+    </section>
+  </section>
+
+  <!-- JOIN -->
+  <section class="view" id="view-join">
+    <section class="block">
+      <h2>Join the circle</h2>
+      <p class="lede">Tell us who you are and what you think. Every answer is treated as raw material, not something to be judged.</p>
+
+      <form id="joinForm">
+        <div class="two-col">
+          <div class="field"><label for="jName">Name</label><input type="text" id="jName" required></div>
+          <div class="field"><label for="jAge">Age</label><input type="number" id="jAge" min="10" max="100"></div>
+        </div>
+        <div class="two-col">
+          <div class="field"><label for="jCity">City</label><input type="text" id="jCity"></div>
+          <div class="field"><label for="jContact">Email or Instagram</label><input type="text" id="jContact"></div>
+        </div>
+        <div class="field"><label for="jProfession">Profession</label><input type="text" id="jProfession"></div>
+
+        <div class="form-section-title">Skills</div>
+        <div class="field">
+          <div class="check-grid" id="skillsGrid"></div>
+          <div class="field" id="skillOtherWrap" style="display:none; margin-top:10px;">
+            <input type="text" id="skillOther" placeholder="Tell us the skill">
+          </div>
+        </div>
+
+        <div class="field"><label for="jHelp">How would you like to help?</label>
+          <textarea id="jHelp" placeholder="Weekends, remote research, local meetups, whatever works for you..."></textarea>
+        </div>
+
+        <div class="form-section-title">In your own words</div>
+        <div class="field"><label for="qWhy">Why do you want to contribute to Kavach?</label><textarea id="qWhy"></textarea></div>
+        <div class="field"><label for="qMissing">What do you think is missing from Kavach?</label><textarea id="qMissing"></textarea></div>
+        <div class="field"><label for="qChange">If you were designing this for yourself, what would you change?</label><textarea id="qChange"></textarea></div>
+
+        <div class="field">
+          <label>Where would you feel comfortable wearing the device?</label>
+          <div class="check-grid" id="wearGrid"></div>
+          <div class="field" id="wearOtherWrap" style="display:none; margin-top:10px;">
+            <input type="text" id="wearOther" placeholder="Tell us where">
+          </div>
+        </div>
+
+        <div class="field"><label for="qCode">What should happen when your secret code word is spoken?</label><textarea id="qCode"></textarea></div>
+        <div class="field"><label for="qTrust">What would make you trust this device?</label><textarea id="qTrust"></textarea></div>
+        <div class="field"><label for="qDanger">What could make this device dangerous or problematic?</label><textarea id="qDanger"></textarea></div>
+        <div class="field"><label for="qFeature">What feature would you add?</label><textarea id="qFeature"></textarea></div>
+
+        <button type="submit" class="btn btn-primary btn-block">Add me to the circle</button>
+      </form>
+      <div id="joinConfirm" style="display:none; margin-top:24px;" class="disclaimer-box">
+        <strong>You're in the circle.</strong> Your answers were added to Kavach's records for this prototype. Want to keep going?
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+          <button class="btn btn-outline" onclick="showView('feedback')">See the feedback board</button>
+          <button class="btn btn-outline" onclick="showView('idea')">Drop another idea</button>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- IDEA -->
+  <section class="view" id="view-idea">
+    <section class="block">
+      <h2>Drop your idea</h2>
+      <p class="lede">One thing. That's all this takes.</p>
+      <form id="ideaForm">
+        <div class="field">
+          <label for="ideaText">If you could change ONE thing about Kavach, what would it be?</label>
+          <textarea id="ideaText" required style="min-height:130px;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+      </form>
+      <div id="ideaConfirm" style="display:none; margin-top:20px;" class="disclaimer-box">
+        Your idea has been added to the community board.
+        <div style="margin-top:12px;"><button class="btn btn-outline" onclick="showView('feedback')">See the board</button></div>
+      </div>
+    </section>
+  </section>
+
+  <!-- FEEDBACK BOARD -->
+  <section class="view" id="view-feedback">
+    <section class="block">
+      <h2>Feedback board</h2>
+      <p class="lede">Real reactions from women who've looked at Kavach so far. Add one of your own below.</p>
+      <form class="board-add" id="boardAddForm">
+        <input type="text" id="boardAddInput" placeholder="Add your own idea..." required>
+        <button type="submit" class="btn btn-primary">Add</button>
+      </form>
+      <div class="card-grid" id="cardGrid"></div>
+    </section>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="view" id="view-projects">
+    <section class="block">
+      <h2>Community projects</h2>
+      <p class="lede">Kavach is really nine smaller efforts running at once. Pick the one that fits what you know.</p>
+      <div id="projectList"></div>
+    </section>
+  </section>
+
+  <!-- CONTRIBUTE -->
+  <section class="view" id="view-contribute">
+    <section class="block">
+      <h2>Become a contributor</h2>
+      <p class="lede">Choose the role that fits how you'd like to be involved.</p>
+      <div class="role-grid" id="roleGrid"></div>
+
+      <div class="form-section-title">Looking ahead</div>
+      <p style="font-size:0.92rem; color:var(--text-dim);">If Kavach grows, what would matter to you? This is a survey of interest, not an offer.</p>
+      <div class="check-grid" id="compGrid"></div>
+
+      <div class="disclaimer-box">
+        Any future equity/ESOP arrangement will require a separate formal agreement. Choosing an option above does not promise anyone shares, payment, or ownership.
+      </div>
+
+      <button class="btn btn-primary btn-block" id="continueToConsent" onclick="goToConsent()">Continue to consent</button>
+    </section>
+  </section>
+
+  <!-- CONSENT -->
+  <section class="view" id="view-consent">
+    <section class="block">
+      <h2>Kavach Circle participation consent</h2>
+      <p class="consent-note">This is a prototype consent interface, NOT a legally final waiver.</p>
+
+      <div class="consent-list" id="consentList"></div>
+
+      <div class="two-col">
+        <div class="field"><label for="cName">Name</label><input type="text" id="cName"></div>
+        <div class="field"><label for="cDate">Date</label><input type="date" id="cDate"></div>
+      </div>
+
+      <div class="field">
+        <label>Signature</label>
+        <div class="sig-wrap">
+          <div class="sig-label-row">
+            <span>Draw with your finger or mouse</span>
+            <span class="sig-status" id="sigStatus"></span>
+          </div>
+          <canvas id="sigpad"></canvas>
+          <div class="sig-warning" id="sigWarning"></div>
+          <div class="sig-btn-row">
+            <button type="button" class="btn btn-quiet" onclick="clearSig()">Clear</button>
+            <button type="button" class="btn btn-outline" onclick="lockSig()">Sign</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="submitConsent" disabled onclick="submitConsent()" style="margin-top:22px;">Submit</button>
+    </section>
+  </section>
+
+</main>
+
+<footer class="site wrap">
+  <div class="fmark">Kavach Circle</div>
+  <div class="ftag">Everyone can contribute. Every perspective matters.</div>
+  <span class="fraw">RAW COMMUNITY PROTOTYPE</span>
+</footer>
+
+<div class="overlay" id="consentOverlay">
+  <div class="overlay-inner">
+    <span class="overlay-mark">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 2.5 L27 6.5 V15.5 C27 22.5 22.3 27.3 16 29.5 C9.7 27.3 5 22.5 5 15.5 V6.5 Z" stroke="var(--brass)" stroke-width="1.6" fill="none"/>
+        <path d="M11 15.8 L14.3 19.1 L21.2 11.9" stroke="var(--brass)" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <h2>Kavach Circle — contribution recorded</h2>
+    <p style="color:var(--text-dim);">Your consent record was saved for this prototype session. A real agreement, if one follows, will be handled separately.</p>
+    <button class="btn btn-primary" onclick="closeOverlay()">Back to home</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ---------------- Google Sheet sync ----------------
+     1. Set up the Google Sheet + Apps Script web app (see setup instructions
+        provided alongside this file).
+     2. Paste the deployment URL below, between the quotes.
+     3. Save. Every submission below will now also be sent to your sheet,
+        in addition to being saved locally in the browser.
+  ------------------------------------------------------------------- */
+  var CONFIG = {
+    SHEET_WEBAPP_URL: "https://script.google.com/macros/s/AKfycbzTpXwyJugWvFT4GdwO6S3mI3EvoMjlnIJiZ_G4A09iqRaDv---F5fWNDDu2I_aujy1/exec"
+  };
+
+  function sendToSheet(tabName, payload){
+    if (!CONFIG.SHEET_WEBAPP_URL || CONFIG.SHEET_WEBAPP_URL.indexOf('PASTE_YOUR') === 0) return;
+    try {
+      fetch(CONFIG.SHEET_WEBAPP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ sheet: tabName, payload: payload })
+      }).catch(function(){ /* offline or blocked — local copy still saved */ });
+    } catch(e){ /* ignore */ }
+  }
+
+  /* ---------------- Theme ---------------- */
+  var root = document.documentElement;
+  var savedTheme = localStorage.getItem('kavach_theme');
+  if (savedTheme) root.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeToggle').addEventListener('click', function(){
+    var current = root.getAttribute('data-theme');
+    var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    var effectiveDark = current ? current === 'dark' : !prefersLight;
+    var next = effectiveDark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('kavach_theme', next); } catch(e){}
+  });
+
+  /* ---------------- Nav ---------------- */
+  window.showView = function(id){
+    document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+    var target = document.getElementById('view-' + id);
+    if (target) target.classList.add('active');
+    window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+  };
+  window.navTo = function(id){ closeDrawer(); showView(id); };
+  window.openDrawer = function(){
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerScrim').classList.add('open');
+  };
+  window.closeDrawer = function(){
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerScrim').classList.remove('open');
+  };
+
+  /* ---------------- Banner ---------------- */
+  var bannerTimer = null;
+  window.showBanner = function(msg){
+    var el = document.getElementById('bannerMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(function(){ el.classList.remove('show'); }, 3200);
+  };
+
+  /* ---------------- Hero reveal ---------------- */
+  var headlineWords = ["Kavach", "Circle"];
+  var headlineEl = document.getElementById('heroHeadline');
+  headlineEl.innerHTML = headlineWords.map(function(w,i){
+    return '<span style="animation-delay:'+(i*0.09)+'s">'+w+'&nbsp;</span>';
+  }).join('');
+  var ring = document.getElementById('shieldRing');
+  ring.animate([
+    { opacity: 0, transform: 'scale(0.7)' },
+    { opacity: 0.7, transform: 'scale(1)' },
+    { opacity: 0, transform: 'scale(1.5)' }
+  ], { duration: 1400, delay: 250, easing: 'ease-out' });
+
+  /* ---------------- Storage helpers ---------------- */
+  function loadJSON(key, fallback){
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+    catch(e){ return fallback; }
+  }
+  function saveJSON(key, val){
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+  }
+
+  /* ---------------- Skills / wear checkboxes ---------------- */
+  var SKILLS = ["Law","Engineering","Electronics","Software","AI","Cybersecurity","Product design","Jewelry design","Fashion","Manufacturing","Medical","Psychology","NGO work","Marketing","Social media","Fundraising","Research","Government/public policy","Testing","Community building","Other"];
+  var skillsGrid = document.getElementById('skillsGrid');
+  SKILLS.forEach(function(s){
+    var lab = document.createElement('label');
+    lab.className = 'check-item';
+    lab.innerHTML = '<input type="checkbox" value="'+s+'" class="skillbox"> <span>'+s+'</span>';
+    skillsGrid.appendChild(lab);
+  });
+  skillsGrid.addEventListener('change', function(e){
+    if (e.target.value === 'Other'){
+      document.getElementById('skillOtherWrap').style.display = e.target.checked ? 'block' : 'none';
+    }
+  });
+
+  var WEAR = ["Thigh","Wrist","Necklace","Bracelet","Ring","Earring","Clothing","Other"];
+  var wearGrid = document.getElementById('wearGrid');
+  WEAR.forEach(function(s){
+    var lab = document.createElement('label');
+    lab.className = 'check-item';
+    lab.innerHTML = '<input type="checkbox" value="'+s+'" class="wearbox"> <span>'+s+'</span>';
+    wearGrid.appendChild(lab);
+  });
+  wearGrid.addEventListener('change', function(e){
+    if (e.target.value === 'Other'){
+      document.getElementById('wearOtherWrap').style.display = e.target.checked ? 'block' : 'none';
+    }
+  });
+
+  /* ---------------- Join form submit ---------------- */
+  document.getElementById('joinForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var skills = Array.from(document.querySelectorAll('.skillbox:checked')).map(function(c){return c.value;});
+    var wear = Array.from(document.querySelectorAll('.wearbox:checked')).map(function(c){return c.value;});
+    var entry = {
+      name: document.getElementById('jName').value,
+      age: document.getElementById('jAge').value,
+      city: document.getElementById('jCity').value,
+      contact: document.getElementById('jContact').value,
+      profession: document.getElementById('jProfession').value,
+      skills: skills,
+      skillOther: document.getElementById('skillOther').value,
+      help: document.getElementById('jHelp').value,
+      why: document.getElementById('qWhy').value,
+      missing: document.getElementById('qMissing').value,
+      change: document.getElementById('qChange').value,
+      wear: wear,
+      wearOther: document.getElementById('wearOther').value,
+      code: document.getElementById('qCode').value,
+      trust: document.getElementById('qTrust').value,
+      danger: document.getElementById('qDanger').value,
+      feature: document.getElementById('qFeature').value,
+      submittedAt: new Date().toISOString()
+    };
+    var all = loadJSON('kavach_join_submissions', []);
+    all.push(entry);
+    saveJSON('kavach_join_submissions', all);
+    sendToSheet('Join Submissions', entry);
+    document.getElementById('joinForm').style.display = 'none';
+    document.getElementById('joinConfirm').style.display = 'block';
+    showBanner('Added to the circle');
+  });
+
+  /* ---------------- Idea submission ---------------- */
+  document.getElementById('ideaForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var text = document.getElementById('ideaText').value.trim();
+    if (!text) return;
+    addFeedbackCard(text, 'from an idea drop');
+    sendToSheet('Ideas', { text: text, submittedAt: new Date().toISOString() });
+    document.getElementById('ideaForm').style.display = 'none';
+    document.getElementById('ideaConfirm').style.display = 'block';
+  });
+
+  /* ---------------- Feedback board ---------------- */
+  var DEFAULT_CARDS = [
+    "Make it look like normal jewelry.",
+    "Battery should last longer.",
+    "Don't make it obvious.",
+    "Need offline mode.",
+    "Need emergency contacts.",
+    "Need evidence.",
+    "Need privacy.",
+    "Need easy activation."
+  ];
+
+  function getFeedbackCards(){
+    var stored = loadJSON('kavach_feedback_cards', null);
+    if (stored === null){
+      stored = DEFAULT_CARDS.map(function(t, i){ return { id: 'd'+i, text: t, votes: 0, tag: 'from the founding board' }; });
+      saveJSON('kavach_feedback_cards', stored);
+    }
+    return stored;
+  }
+  window.addFeedbackCard = function(text, tag){
+    var cards = getFeedbackCards();
+    cards.unshift({ id: 'u' + Date.now(), text: text, votes: 0, tag: tag || 'from the community' });
+    saveJSON('kavach_feedback_cards', cards);
+    renderBoard();
+    showBanner('Your idea has been added to the community board.');
+  };
+
+  function renderBoard(){
+    var cards = getFeedbackCards();
+    var grid = document.getElementById('cardGrid');
+    grid.innerHTML = '';
+    if (!cards.length){
+      grid.innerHTML = '<p class="empty-note">No cards yet — be the first to add one.</p>';
+      return;
+    }
+    cards.forEach(function(c){
+      var el = document.createElement('div');
+      el.className = 'idea-card';
+      el.innerHTML = '<p>'+escapeHTML(c.text)+'</p>' +
+        '<div class="row"><span class="tag">'+escapeHTML(c.tag)+'</span>' +
+        '<button class="vote-btn" data-id="'+c.id+'">▲ <span>'+c.votes+'</span></button></div>';
+      grid.appendChild(el);
+    });
+  }
+  document.getElementById('cardGrid').addEventListener('click', function(e){
+    var btn = e.target.closest('.vote-btn');
+    if (!btn) return;
+    var id = btn.getAttribute('data-id');
+    var cards = getFeedbackCards();
+    cards = cards.map(function(c){ if (c.id === id) c.votes += 1; return c; });
+    saveJSON('kavach_feedback_cards', cards);
+    renderBoard();
+  });
+  document.getElementById('boardAddForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var input = document.getElementById('boardAddInput');
+    var text = input.value.trim();
+    if (!text) return;
+    addFeedbackCard(text, 'from the community');
+    sendToSheet('Feedback Board', { text: text, submittedAt: new Date().toISOString() });
+    input.value = '';
+  });
+
+  function escapeHTML(str){
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  /* ---------------- Projects ---------------- */
+  var PROJECTS = [
+    { id:'hardware', name:'Kavach Hardware', tagline:'Sensors, battery, form factor', desc:"The physical device: sensors, battery, and how it's built to work in daily life.", tasks:["Battery life testing","Casing material research","Sensor placement studies"] },
+    { id:'app', name:'Kavach App', tagline:'Alerts, contacts, activation', desc:"The companion app: alerts, contacts, and what happens after activation.", tasks:["Alert flow design","Offline mode planning","Contact management screens"] },
+    { id:'jewelry', name:'Kavach Jewelry', tagline:'Wearable, not obvious', desc:"Making the device look like something you'd actually wear.", tasks:["Ring and bracelet concepts","Material and finish options","Hiding the tech without hiding the point"] },
+    { id:'legal', name:'Kavach Legal', tagline:'Privacy, compliance, consent', desc:"What Kavach needs to get right, legally, before it reaches anyone.", tasks:["Data and privacy review","Regional compliance research","Consent and liability language"] },
+    { id:'cyber', name:'Kavach Cybersecurity', tagline:'Threat modeling, encryption', desc:"Keeping the device and app from becoming a new risk.", tasks:["Threat modeling","Encryption approach","Code word security review"] },
+    { id:'community', name:'Kavach Community', tagline:'Growing the circle', desc:"Growing the circle and keeping it a place people trust.", tasks:["Onboarding new contributors","Moderating the feedback board","Running local meetups"] },
+    { id:'manufacturing', name:'Kavach Manufacturing', tagline:'Prototype to scale', desc:"Turning a prototype into something that can be made at scale.", tasks:["Sourcing components","Small-batch production planning","Cost modeling"] },
+    { id:'testing', name:'Kavach Testing', tagline:'Real-world trials', desc:"Trying the device in real conditions and reporting back honestly.", tasks:["Wear testing","Activation scenario testing","Feedback collection"] },
+    { id:'ngo', name:'Kavach NGO Outreach', tagline:'Partners already doing this', desc:"Connecting Kavach with organizations already doing this work.", tasks:["Partner outreach","Grant research","Field feedback from existing programs"] }
+  ];
+
+  function getJoinedProjects(){ return loadJSON('kavach_joined_projects', {}); }
+
+  function renderProjects(){
+    var joined = getJoinedProjects();
+    var list = document.getElementById('projectList');
+    list.innerHTML = '';
+    PROJECTS.forEach(function(p){
+      var isJoined = !!joined[p.id];
+      var card = document.createElement('div');
+      card.className = 'project-card';
+      card.innerHTML =
+        '<h3>'+p.name+'</h3>' +
+        '<div class="tagline">'+p.tagline+'</div>' +
+        '<p>'+p.desc+'</p>' +
+        '<ul>' + p.tasks.map(function(t){ return '<li>'+t+'</li>'; }).join('') + '</ul>' +
+        '<div class="project-foot">' +
+          '<span class="contrib-count">'+(isJoined ? 'Founder + you are building this' : 'Founder only — no contributors yet')+'</span>' +
+          '<button class="btn '+(isJoined ? 'btn-quiet' : 'btn-primary')+'" data-pid="'+p.id+'">'+(isJoined ? 'Joined ✓' : 'Join')+'</button>' +
+        '</div>';
+      list.appendChild(card);
+    });
+  }
+  document.getElementById('projectList').addEventListener('click', function(e){
+    var btn = e.target.closest('button[data-pid]');
+    if (!btn) return;
+    var joined = getJoinedProjects();
+    var pid = btn.getAttribute('data-pid');
+    if (!joined[pid]){
+      joined[pid] = true;
+      saveJSON('kavach_joined_projects', joined);
+      var proj = PROJECTS.find(function(p){ return p.id === pid; });
+      sendToSheet('Project Joins', { project: proj ? proj.name : pid, joinedAt: new Date().toISOString() });
+      renderProjects();
+      showBanner("You're in — this project now shows you as a contributor.");
+    }
+  });
+
+  /* ---------------- Contributor roles ---------------- */
+  var ROLES = [
+    { key:'Founder', desc:'Started Kavach and holds the overall vision.' },
+    { key:'Core Contributor', desc:'Works on Kavach regularly and helps shape decisions.' },
+    { key:'Contributor', desc:'Takes on specific tasks inside a project.' },
+    { key:'Advisor', desc:'Offers expertise when a project needs it.' },
+    { key:'Volunteer', desc:"Helps out with time, not necessarily a specific skill." },
+    { key:'Tester', desc:'Tries the device and prototypes, reports back.' },
+    { key:'Community Member', desc:'Part of the circle — shares ideas and feedback.' }
+  ];
+  var roleGrid = document.getElementById('roleGrid');
+  ROLES.forEach(function(r, i){
+    var lab = document.createElement('label');
+    lab.className = 'role-card';
+    lab.innerHTML = '<input type="radio" name="role" value="'+r.key+'">' +
+      '<span class="rk">Level '+(i+1)+'</span>' +
+      '<div class="rn">'+r.key+'</div>' +
+      '<p class="rd">'+r.desc+'</p>';
+    roleGrid.appendChild(lab);
+  });
+  roleGrid.addEventListener('change', function(){
+    document.querySelectorAll('.role-card').forEach(function(c){
+      c.classList.toggle('selected', c.querySelector('input').checked);
+    });
+  });
+
+  var COMP = ["Recognition","Paid work","Consulting","Partnership","Equity/ESOP consideration"];
+  var compGrid = document.getElementById('compGrid');
+  COMP.forEach(function(c){
+    var lab = document.createElement('label');
+    lab.className = 'check-item';
+    lab.innerHTML = '<input type="checkbox" value="'+c+'" class="compbox"> <span>'+c+'</span>';
+    compGrid.appendChild(lab);
+  });
+
+  window.goToConsent = function(){
+    var role = document.querySelector('input[name="role"]:checked');
+    var comp = Array.from(document.querySelectorAll('.compbox:checked')).map(function(c){return c.value;});
+    saveJSON('kavach_pending_role', { role: role ? role.value : null, comp: comp });
+    showView('consent');
+  };
+
+  /* ---------------- Consent checklist ---------------- */
+  var CONSENT_ITEMS = [
+    "I understand that Kavach is currently a prototype/concept.",
+    "I understand that the project is still being developed.",
+    "I voluntarily choose to contribute ideas/feedback.",
+    "I understand that my feedback may be used to improve the project.",
+    "I understand that participation does not automatically give me equity, payment or ownership.",
+    "I agree that any future equity/ESOP arrangement would require a separate agreement.",
+    "I understand that prototype testing may involve separate safety instructions and consent."
+  ];
+  var consentList = document.getElementById('consentList');
+  CONSENT_ITEMS.forEach(function(text, i){
+    var lab = document.createElement('label');
+    lab.className = 'consent-item';
+    lab.innerHTML = '<input type="checkbox" class="consentbox" data-i="'+i+'"> <span>'+text+'</span>';
+    consentList.appendChild(lab);
+  });
+  consentList.addEventListener('change', function(e){
+    e.target.closest('.consent-item').classList.toggle('checked', e.target.checked);
+    revalidateConsent();
+  });
+  document.getElementById('cName').addEventListener('input', revalidateConsent);
+  document.getElementById('cDate').addEventListener('input', revalidateConsent);
+  document.getElementById('cDate').valueAsDate = new Date();
+
+  /* ---------------- Signature pad ---------------- */
+  var canvas = document.getElementById('sigpad');
+  var ctx = canvas.getContext('2d');
+  var drawing = false;
+  var hasDrawn = false;
+  var signatureLocked = false;
+
+  function sizeCanvas(){
+    var rect = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--text');
+  }
+  window.addEventListener('resize', function(){
+    var data = hasDrawn ? canvas.toDataURL() : null;
+    sizeCanvas();
+    if (data){
+      var img = new Image();
+      img.onload = function(){ ctx.drawImage(img, 0, 0, canvas.width/(window.devicePixelRatio||1), canvas.height/(window.devicePixelRatio||1)); };
+      img.src = data;
+    }
+  });
+  setTimeout(sizeCanvas, 50);
+
+  function getPos(evt){
+    var rect = canvas.getBoundingClientRect();
+    var x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+    var y = (evt.touches ? evt.touches[0].clientY : evt.clientY) - rect.top;
+    return { x: x, y: y };
+  }
+  function startDraw(e){
+    if (signatureLocked) return;
+    drawing = true;
+    var p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    e.preventDefault();
+  }
+  function moveDraw(e){
+    if (!drawing || signatureLocked) return;
+    var p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    hasDrawn = true;
+    e.preventDefault();
+  }
+  function endDraw(){ drawing = false; }
+
+  canvas.addEventListener('pointerdown', startDraw);
+  canvas.addEventListener('pointermove', moveDraw);
+  window.addEventListener('pointerup', endDraw);
+  canvas.addEventListener('touchstart', startDraw, {passive:false});
+  canvas.addEventListener('touchmove', moveDraw, {passive:false});
+  canvas.addEventListener('touchend', endDraw);
+
+  window.clearSig = function(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hasDrawn = false;
+    signatureLocked = false;
+    canvas.classList.remove('locked');
+    document.getElementById('sigStatus').textContent = '';
+    document.getElementById('sigWarning').textContent = '';
+    revalidateConsent();
+  };
+  window.lockSig = function(){
+    if (!hasDrawn){
+      document.getElementById('sigWarning').textContent = 'Draw your signature in the box above first.';
+      return;
+    }
+    signatureLocked = true;
+    canvas.classList.add('locked');
+    document.getElementById('sigWarning').textContent = '';
+    document.getElementById('sigStatus').textContent = 'Signature locked ✓';
+    revalidateConsent();
+  };
+
+  function revalidateConsent(){
+    var allChecked = Array.from(document.querySelectorAll('.consentbox')).every(function(c){ return c.checked; });
+    var name = document.getElementById('cName').value.trim();
+    var date = document.getElementById('cDate').value;
+    var ok = allChecked && name && date && signatureLocked;
+    document.getElementById('submitConsent').disabled = !ok;
+  }
+
+  window.submitConsent = function(){
+    var role = loadJSON('kavach_pending_role', {});
+    var record = {
+      name: document.getElementById('cName').value.trim(),
+      date: document.getElementById('cDate').value,
+      role: role.role || null,
+      compInterest: role.comp || [],
+      signature: canvas.toDataURL(),
+      submittedAt: new Date().toISOString()
+    };
+    var all = loadJSON('kavach_consent_records', []);
+    all.push(record);
+    saveJSON('kavach_consent_records', all);
+    sendToSheet('Consent Records', record);
+    document.getElementById('consentOverlay').classList.add('show');
+  };
+  window.closeOverlay = function(){
+    document.getElementById('consentOverlay').classList.remove('show');
+    // reset consent form for demo purposes
+    document.querySelectorAll('.consentbox').forEach(function(c){ c.checked = false; c.closest('.consent-item').classList.remove('checked'); });
+    document.getElementById('cName').value = '';
+    document.getElementById('cDate').valueAsDate = new Date();
+    clearSig();
+    document.querySelectorAll('input[name="role"]').forEach(function(r){ r.checked = false; });
+    document.querySelectorAll('.role-card').forEach(function(c){ c.classList.remove('selected'); });
+    document.querySelectorAll('.compbox').forEach(function(c){ c.checked = false; });
+    showView('home');
+  };
+
+  /* ---------------- Init ---------------- */
+  renderBoard();
+  renderProjects();
+})();
+</script>
+</body>
+</html>
