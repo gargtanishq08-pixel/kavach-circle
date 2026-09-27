@@ -608,6 +608,7 @@
       </div>
 
       <button class="btn btn-primary btn-block" id="submitConsent" disabled onclick="submitConsent()" style="margin-top:22px;">Submit</button>
+      <p class="field-hint" id="consentHint" style="margin-top:10px;"></p>
     </section>
   </section>
 
@@ -677,6 +678,12 @@
     var target = document.getElementById('view-' + id);
     if (target) target.classList.add('active');
     window.scrollTo({top:0, behavior:'instant' in window ? 'instant' : 'auto'});
+    if (id === 'consent' && typeof sizeCanvas === 'function'){
+      // the canvas was hidden (display:none) until now, so it has to be
+      // measured and sized *after* it becomes visible, not before.
+      setTimeout(sizeCanvas, 0);
+      if (typeof revalidateConsent === 'function') revalidateConsent();
+    }
   };
   window.navTo = function(id){ closeDrawer(); showView(id); };
   window.openDrawer = function(){
@@ -1067,6 +1074,18 @@
     var date = document.getElementById('cDate').value;
     var ok = allChecked && name && date && signatureLocked;
     document.getElementById('submitConsent').disabled = !ok;
+
+    var hint = document.getElementById('consentHint');
+    if (ok){
+      hint.textContent = '';
+    } else {
+      var missing = [];
+      if (!allChecked) missing.push('check all 7 boxes above');
+      if (!name) missing.push('add your name');
+      if (!date) missing.push('add a date');
+      if (!signatureLocked) missing.push(hasDrawn ? 'click "Sign" to lock your signature' : 'draw your signature, then click "Sign"');
+      hint.textContent = 'Still needed: ' + missing.join(', ') + '.';
+    }
   }
 
   window.submitConsent = function(){
